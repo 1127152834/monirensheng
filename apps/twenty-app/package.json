@@ -1,0 +1,10 @@
+{
+  "name": "@company-helper-crm/twenty-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "twenty-sdk": "2.55.0",
+    "react": "19.2.3"
+  }
+}

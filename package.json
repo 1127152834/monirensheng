@@ -6,8 +6,8 @@
     "node": ">=24 <25"
   },
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/business-api",
+    "packages/contracts"
   ],
   "scripts": {
     "test": "vitest run",
@@ -17,9 +17,10 @@
     "dev:stop": "node scripts/dev-twenty.mjs down"
   },
   "devDependencies": {
+    "@playwright/test": "1.60.0",
     "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
     "typescript": "^5.9.0",
-    "vitest": "^4.0.0",
-    "tsx": "^4.20.0"
+    "vitest": "^4.0.0"
   }
 }

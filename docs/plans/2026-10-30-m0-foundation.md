@@ -75,11 +75,13 @@ M0 样本客户必须有明确 owner，不替 Q-01 决定正式无负责人策�
 - Consumes: 固定 Twenty checkout、现有编译/启动路径及本机 Docker 能力，只读核验后使用。
 - Produces: `runPreflight(config): Promise<{ok: boolean; checks: CheckResult[]}>`；独立开发 API `/health`；独立 Twenty 与业务数据库的连接配置。
 
-- [ ] 写 `dev-isolation.test.ts`：现有端口 3000 或原数据库目标被传入时预检失败；缺少隔离标识时失败；测试数据源与现有环境不相同。
-- [ ] 建立运行该测试所需的最小 workspace/脚本，执行 `npm run test:integration -- tests/integration/dev-isolation.test.ts`，确认因隔离逻辑尚未实现而失败。
-- [ ] 实现预检及启动脚本。默认开发端口候选为 Twenty 3100、业务 API 8788、PostgreSQL 15432、Redis 16379；占用时明确报错，不杀进程或擅自换到现有环境。固定 Compose 项目名 `company-helper-crm-dev` 和独立卷。
-- [ ] 从当前 Twenty 源码的启动定义解析实际入口，显式传入隔离环境。保持主实例不变；需要函数运行时调整时只改开发配置并记录理由。
-- [ ] 运行隔离测试、独立实例健康检查及既有 3000 的只读健康检查；结果写入验证报告。成功后单独提交此任务文件。
+- [x] 写 `dev-isolation.test.ts`：现有端口 3000 或原数据库目标被传入时预检失败；缺少隔离标识时失败；测试数据源与现有环境不相同。
+- [x] 建立运行该测试所需的最小 workspace/脚本，执行 `npm run test:integration -- tests/integration/dev-isolation.test.ts`，确认因隔离逻辑尚未实现而失败。
+- [x] 实现预检及启动脚本。默认开发端口候选为 Twenty 3100、业务 API 8788、PostgreSQL 15432、Redis 16379；占用时明确报错，不杀进程或擅自换到现有环境。固定 Compose 项目名 `company-helper-crm-dev` 和独立卷。
+- [x] 从当前 Twenty 源码的启动定义解析实际入口，显式传入隔离环境。保持主实例不变；需要函数运行时调整时只改开发配置并记录理由。
+- [x] 运行隔离测试、独立实例健康检查及既有 3000 的只读健康检查；结果写入验证报告。成功后单独提交此任务文件。
+
+实际证据：15 项自动测试、类型检查、隔离停止/重启和原实例健康验证通过，任务审查已关闭；首次 red/green 执行顺序有偏差，详见 [验证记录](../reference/m0-validation.md)。
 
 **完成条件：** 开发实例可独立启动/停止，测试不会读写当前业务库；报告记录真实版本、端口与检查结果，不记录密钥。
 

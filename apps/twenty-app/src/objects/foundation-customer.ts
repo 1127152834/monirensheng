@@ -1,0 +1,3 @@
+import {defineObject,FieldType} from 'twenty-sdk/define';
+import {FOUNDATION_CUSTOMER_OBJECT_UNIVERSAL_IDENTIFIER,OWNER_FIELD,VERSION_FIELD} from 'src/constants/universal-identifiers';
+export default defineObject({universalIdentifier:FOUNDATION_CUSTOMER_OBJECT_UNIVERSAL_IDENTIFIER,nameSingular:'foundationCustomer',namePlural:'foundationCustomers',labelSingular:'合成客户摘要',labelPlural:'合成客户摘要',description:'业务数据库的只读投影',icon:'IconUsers',fields:[{universalIdentifier:OWNER_FIELD,type:FieldType.TEXT,name:'ownerUserId',label:'负责人标识'},{universalIdentifier:VERSION_FIELD,type:FieldType.NUMBER,name:'ownerVersion',label:'负责人版本'}]});

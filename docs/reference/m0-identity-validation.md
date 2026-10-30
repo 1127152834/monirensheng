@@ -35,7 +35,7 @@ GraphQL 拒绝为 `FORBIDDEN` / `PERMISSION_DENIED`，并检查权限消息，`G
 ## 明确未验证/不可用
 
 - `recordSharing` 对新建 probe 的 admin/A/B 返回 canManageSharing=false、generalAccessLevel=null、shares=[]。对象处于默认 unrestricted 模式。支持的 setRecordShare 在 admin/A/B 都返回 Record not found，属于不可用管理能力，**不是通过共享写权限拒绝测试**。没有切换 Enterprise/RLS/sharing flag、注入许可证或配置付费共享模式。不能据此声称所有共享模式已验证；业务投影上线前仍须检查升级和遗留授权。
-- 当前实际内省 `/metadata` 与 `/graphql` 均无 `runCoreWorkflowVersion`，尽管当前源码有 resolver；构建产物与源码存在能力差异。工作流执行路径不可用/未验证，不能把 validation error 当作拒绝。MCP workflow创建已测，执行/队列副作用与其他 workflow写入口未全面验证。
+- 初次内省 `/metadata` 与 `/graphql` 均未列出 `runCoreWorkflowVersion`，曾误判执行入口不可用。控制器后续直接请求 `/graphql` 已证实入口存在：不存在的版本 ID 在管理员请求中进入执行定义检查，而 A 返回 `FORBIDDEN` 权限拒绝。内省省略不能证明运行入口不存在，也不能据此认定构建产物落后。有效无副作用工作流的管理员正控制、A/B 拒绝与执行记录不变检查仍待补齐；MCP workflow 创建已测。
 - 浏览器带用户 application token、只读 app role交集、前端 token刷新/CORS、服务 key 与用户委托隔离的实际页面检查属于 M0-03。本任务只证明 native真实user session的行为；未创建/使用 API key作为员工身份。
 - 原生probe没有客户 owner/ownerVersion；负责人写授权、转交、审计、幂等仍属于后续任务。合成记录/未配置空角色/不激活的空工作流留在隔离环境用于重放验证，不涉及发信、模型调用或企业执行。
 

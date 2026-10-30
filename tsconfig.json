@@ -10,5 +10,9 @@
     "checkJs": false,
     "noEmit": true
   },
-  "include": ["apps/**/*.ts", "tests/**/*.ts", "packages/**/*.ts"]
+  "include": [
+    "apps/business-api/**/*.ts",
+    "tests/**/*.ts",
+    "packages/**/*.ts"
+  ]
 }

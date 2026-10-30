@@ -21,3 +21,10 @@ backups/
 uploads/
 playwright-report/
 test-results/
+
+# Local-source Twenty SDK app tooling (prepared from pinned upstream checkout)
+apps/twenty-app/yarn.lock
+apps/twenty-app/cli/
+
+# Local Twenty CLI state
+apps/twenty-app/.twenty/

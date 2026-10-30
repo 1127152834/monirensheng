@@ -61,12 +61,12 @@ if(!databaseReady || !await exists(resolve(runtime,'initialized'))){
  await nodeRun(['dist/command/command.js','cron:register:all']);
  await writeFile(resolve(runtime,'initialized'),sha+'\n');
 }
-await run(process.execPath,[resolve(root,'node_modules/typescript/bin/tsc'),'--target','ES2023','--module','NodeNext','--moduleResolution','NodeNext','--esModuleInterop','--skipLibCheck','--outDir',resolve(root,'.runtime/business-api'),resolve(root,'apps/business-api/src/index.ts')]);
+await run(process.execPath,[resolve(root,'node_modules/typescript/bin/tsc'),'-p',resolve(root,'apps/business-api/tsconfig.build.json')]);
 const services=[];
 for(const [index,entry] of ['dist/main.js','dist/queue-worker/queue-worker.js',null].entries()){
  const log=`/tmp/company-helper-crm-dev-${index}.log`;await writeFile(log,'',{mode:0o600});
  const exe=index===2?process.execPath:node;
- const args=index===2?[resolve(root,'.runtime/business-api/index.js')]:['--env-file=.env',entry];
+ const args=index===2?[...(await exists(resolve(local,'business-api.env'))?['--env-file='+resolve(local,'business-api.env')]:[]),resolve(root,'.runtime/business-api/apps/business-api/src/index.js')]:['--env-file=.env',entry];
  const cwd=index===2?root:runtime;
  services.push({domain,label:labels[index],command:[exe,...args].join(' '),...(index===0?{port:3100}:index===2?{port:8788}:{})});
  // launchctl gets only our explicit environment via env -i. Never inherit user application secrets.

@@ -1,0 +1,1 @@
+{"compilerOptions":{"target":"ES2023","module":"NodeNext","moduleResolution":"NodeNext","esModuleInterop":true,"skipLibCheck":true,"strict":true,"rootDir":"../..","outDir":"../../.runtime/business-api"},"include":["src/**/*.ts","../../packages/contracts/src/**/*.ts"],"exclude":["src/**/*.test.ts"]}
