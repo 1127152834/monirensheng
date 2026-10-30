@@ -117,3 +117,11 @@
 | 历史 IM、退役集成、运行检查点的保存边界 | 有相应源表和文件引用 | 明确只读归档、保留原服务或选择性迁移，不默认恢复运行 |
 
 当前结论仅支持进入有范围约束的设计和开发：以 CustomerCase、自然人、法律实体、办理记录和材料证据为核心，首版补齐客户负责人授权、批量驾照建档与邮箱 AI；允许外网，不迁 Hostinger、建站和 PDF 转 HTML，桌面执行能力推迟。
+
+## M0-01 隔离运行基线（2026-10-31，Asia/Shanghai）
+
+已在独立工作树建立并实际启动 Twenty server/worker 与业务 API；原实例 3000 的只读健康检查仍返回 200。开发地址为 Twenty 3100、业务 API 8788、PostgreSQL 15432、Redis 16379，Compose 项目固定为 `company-helper-crm-dev`。两个新库分别为 `company_helper_twenty_dev`、`company_helper_business_dev`，未读取原 `.env`、业务库或 MCP 写 key。
+
+Twenty 固定源码提交 `ab962b01c4fdb26cf3cffcc770c7bed0c38bb53e`，采用已有编译产物的隔离副本；其 `.nvmrc` 指定 Node 26.12.1，业务工作区使用 Node 24.22.0。源码 package scripts 和根部署脚本解析到 `dist/main.js`、`dist/queue-worker/queue-worker.js`，不在原源码 cwd 启动。原 datasource 会以 `override:true` 加载 cwd `.env`，因此启动目录、配置、密钥与本地附件存储全部独立。`LOGIC_FUNCTION_TYPE=DISABLED` 保持禁用；尚未证明 SDK 安装与真实用户权限链路。
+
+启动/停止及真实测试证据见 [M0 验证记录](m0-validation.md)。这只完成 M0-01 的环境基线，不表示 M0 或首版业务已验收。
