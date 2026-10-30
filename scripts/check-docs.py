@@ -2,6 +2,7 @@
 """检查本项目文档的本地链接、源码行号和意外凭据；不联网。"""
 
 from pathlib import Path
+import os
 import re
 import sys
 from urllib.parse import unquote
@@ -31,10 +32,13 @@ def heading_ids(markdown):
 
 errors = []
 checked_links = 0
-documents = sorted(ROOT.rglob("*.md"))
+ignored_dirs = {"node_modules", ".git", "dist", ".local", ".runtime", ".superpowers"}
+documents = []
+for directory, subdirs, files in os.walk(ROOT):
+    subdirs[:] = [name for name in subdirs if name not in ignored_dirs]
+    documents.extend(Path(directory) / name for name in files if name.endswith(".md"))
+documents.sort()
 for doc in documents:
-    if any(part in {"node_modules", ".git", "dist", ".local", ".runtime"} for part in doc.relative_to(ROOT).parts):
-        continue
     content = doc.read_text(encoding="utf-8")
     for name, pattern in SECRET_PATTERNS.items():
         for match in pattern.finditer(content):
