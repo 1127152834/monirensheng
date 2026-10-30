@@ -51,3 +51,13 @@ npm run dev:stop
 - 初次 launchctl 使用 Documents 内日志导致 EX_CONFIG78，改为独立 `/tmp` 日志；使用与既有部署相同的 bash wrapper 后稳定启动。
 - 一次诊断误输出生成的合成开发凭据，已立即对独立 DB 密码、APP_SECRET、ENCRYPTION_KEY 轮换，最后启动使用新值；没有读取或泄露原实例秘密。
 - 不声明全仓 Twenty 测试、浏览器用户流程或离线部署通过。当前依赖现成本机 dist/依赖及 macOS launchctl；升级上游后须重新核验。
+
+## M0-01 审查修复第 1 轮：IPv6 与服务身份
+
+- 新增 `::1:3100` 的 IPv6-only 真实监听回归：旧预检错误认为端口空闲，实际观察 `expected true to be false`。未终止该监听进程；测试只关闭自己创建的 socket。
+- 预检对每个固定开发端口依次检查 `127.0.0.1`、`::1`、`0.0.0.0`、`::`。macOS wildcard/reuse 行为意味着仅检查 wildcard 也不足；任一地址绑定失败即拒绝。各探针按序关闭，避免探针之间相互占用。
+- 健康请求固定 `127.0.0.1`，不依赖 localhost 的地址族解析；成功前从唯一 launchctl label 读取 PID，核验实际 `ps` 命令完整匹配预期 Node/入口，并以 `lsof` 验证该 PID 拥有 HTTP 监听端口。server、worker、API 在最终成功前再次核验存活与身份。读取的完整 launchctl 状态仅用于内存解析，不打印。
+- 新增真实子进程测试：正确身份与端口通过；错误命令、未持有监听端口、已退出 PID 拒绝。先在空实现观察2 failed，再实现后通过。
+- 最终 `npm test`：3 files / 15 passed；`npm run typecheck`：exit0。实际隔离 stop/up 后健康与身份检查通过；原3000保持200。
+- 修正初始化检查对大小写混合迁移表名的错误识别，使用 information_schema 精确表名，避免每次重启多跑迁移。
+- 执行报告保留在忽略的 `.superpowers/sdd/2026-10-30-m0-foundation/task-1-report.md`，已从 Git 索引移除；持久验证依据为本页。

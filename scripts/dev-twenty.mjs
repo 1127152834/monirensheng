@@ -4,6 +4,7 @@ import {randomBytes} from 'node:crypto';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {runPreflight} from './dev-preflight.mjs';
+import {assertLaunchedService} from './dev-process.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const local=resolve(root,'.local'),runtime=resolve(root,'.runtime/twenty');
 const source=resolve(root,'../twenty');
@@ -50,7 +51,7 @@ await writeFile(resolve(runtime,'.env'),Object.entries(twentyEnv).map(([k,v])=>`
 await run('docker',[...compose,'up','-d','--wait']);
 await run('docker',[...compose,'exec','-T','postgres','sh','-c','psql -U "$POSTGRES_USER" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname=\'company_helper_business_dev\'" | grep -q 1 || createdb -U "$POSTGRES_USER" company_helper_business_dev']);
 const nodeRun=args=>run(node,args,{cwd:runtime,env:{...clean,...twentyEnv}});
-const databaseReady=execFileSync('docker',[...compose,'exec','-T','postgres','sh','-c',`psql -U "$POSTGRES_USER" -d company_helper_twenty_dev -tAc "SELECT to_regclass('core.upgradeMigration') IS NOT NULL"`],{encoding:'utf8',env:clean}).trim()==='t';
+const databaseReady=execFileSync('docker',[...compose,'exec','-T','postgres','sh','-c',`psql -U "$POSTGRES_USER" -d company_helper_twenty_dev -tAc "SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_schema='core' AND table_name='upgradeMigration')"`],{encoding:'utf8',env:clean}).trim()==='t';
 if(!databaseReady || !await exists(resolve(runtime,'initialized'))){
  await nodeRun(['dist/database/scripts/setup-db.js']);
  await nodeRun(['dist/command/command.js','run-instance-commands','--force','--include-slow']);
@@ -61,17 +62,20 @@ if(!databaseReady || !await exists(resolve(runtime,'initialized'))){
  await writeFile(resolve(runtime,'initialized'),sha+'\n');
 }
 await run(process.execPath,[resolve(root,'node_modules/typescript/bin/tsc'),'--target','ES2023','--module','NodeNext','--moduleResolution','NodeNext','--esModuleInterop','--skipLibCheck','--outDir',resolve(root,'.runtime/business-api'),resolve(root,'apps/business-api/src/index.ts')]);
+const services=[];
 for(const [index,entry] of ['dist/main.js','dist/queue-worker/queue-worker.js',null].entries()){
  const log=`/tmp/company-helper-crm-dev-${index}.log`;await writeFile(log,'',{mode:0o600});
  const exe=index===2?process.execPath:node;
  const args=index===2?[resolve(root,'.runtime/business-api/index.js')]:['--env-file=.env',entry];
  const cwd=index===2?root:runtime;
+ services.push({domain,label:labels[index],command:[exe,...args].join(' '),...(index===0?{port:3100}:index===2?{port:8788}:{})});
  // launchctl gets only our explicit environment via env -i. Never inherit user application secrets.
  await run('launchctl',['submit','-l',labels[index],'-o',log,'-e',log,'--','/bin/bash','-c','cd "$1" && shift && exec /usr/bin/env -i "$@"','isolated-runtime',cwd,...Object.entries({...clean,...(index===2?{NODE_ENV:'development'}:{NODE_ENV:'production'})}).filter(([,v])=>v!==undefined).map(([k,v])=>`${k}=${v}`),exe,...args]);
 }
-for(const url of ['http://localhost:3100/healthz','http://127.0.0.1:8788/health']) {
+for(const [index,url] of [[0,'http://127.0.0.1:3100/healthz'],[2,'http://127.0.0.1:8788/health']]) {
  let healthy=false;
- for(let attempt=0;attempt<120;attempt++) {try{const r=await fetch(url,{signal:AbortSignal.timeout(1000)});if(r.ok && (await r.json()).status==='ok'){healthy=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}
+ for(let attempt=0;attempt<120;attempt++) {try{const r=await fetch(url,{signal:AbortSignal.timeout(1000)});if(r.ok && (await r.json()).status==='ok'){assertLaunchedService(services[index]);healthy=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}
  if(!healthy)throw new Error(`Health check failed: ${url}; inspect /tmp/company-helper-crm-dev-*.log`);
 }
+for(const service of services)assertLaunchedService(service);
 console.log('Isolated health verified: Twenty3100 / business8788; logs /tmp/company-helper-crm-dev-{0,1,2}.log.');

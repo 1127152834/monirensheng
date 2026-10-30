@@ -7,3 +7,13 @@ describe('development isolation',()=>{
  it.each([{twentyPort:3000},{businessApiPort:3000},{isolationId:undefined},{environment:'production'},{twentyDatabaseUrl:'postgres://dev:fake@localhost:5432/default'},{businessDatabaseUrl:valid.twentyDatabaseUrl},{redisUrl:'redis://localhost:6379'},{twentyDatabaseUrl:'postgres://dev:fake@remote:15432/company_helper_twenty_dev'},{businessDatabaseUrl:'postgres://dev:fake@127.0.0.1:15432/default'}])('rejects unsafe config %j',async(patch)=>expect((await runPreflight({...valid,...patch})).ok).toBe(false));
  it('refuses occupied application ports without terminating the listener',async()=>{const server=net.createServer();await new Promise<void>((r,reject)=>{server.once('error',(e:NodeJS.ErrnoException)=>e.code==='EADDRINUSE'?r():reject(e));server.listen(3100,'127.0.0.1',r);});try {expect((await runPreflight(valid,{checkPorts:true})).ok).toBe(false);await new Promise<void>((r,reject)=>{const socket=net.connect(3100,'127.0.0.1',()=>{socket.destroy();r();});socket.once('error',reject);});}finally{if(server.listening)await new Promise<void>(r=>server.close(()=>r()));}});
 });
+
+it('refuses an IPv6-only Twenty listener without stopping it',async()=>{
+ const server=net.createServer();
+ await new Promise<void>((resolve,reject)=>{server.once('error',(e:NodeJS.ErrnoException)=>e.code==='EADDRINUSE'?resolve():reject(e));server.listen({host:'::1',port:3100,ipv6Only:true},resolve);});
+ try {
+  const result=await runPreflight(valid,{checkPorts:true});
+  expect(result.checks.find(c=>c.name==='port 3100')?.ok).toBe(false);
+  await new Promise<void>((resolve,reject)=>{const socket=net.connect(3100,'::1',()=>{socket.destroy();resolve();});socket.once('error',reject);});
+ } finally {if(server.listening)await new Promise<void>(resolve=>server.close(()=>resolve()));}
+});

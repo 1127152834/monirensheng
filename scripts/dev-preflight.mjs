@@ -13,7 +13,9 @@ export async function runPreflight(config, {checkPorts=false}={}) {
   check(name,ok,'isolated loopback target required');
  }
  if(checkPorts && checks.every(c=>c.ok)) for(const port of [3100,8788,15432,16379]) {
-  const free=await new Promise(resolve=>{const s=net.createServer();s.once('error',()=>resolve(false));s.listen(port,'127.0.0.1',()=>s.close(()=>resolve(true)));});
+  const results=[];
+  for(const host of ['127.0.0.1','::1','0.0.0.0','::'])results.push(await new Promise(resolve=>{const s=net.createServer();s.once('error',()=>resolve(false));s.listen({port,host,ipv6Only:host.includes(':')},()=>s.close(()=>resolve(true)));}));
+  const free=results.every(Boolean);
   check(`port ${port}`,free,'must be free; no process is terminated');
  }
  return {ok:checks.every(c=>c.ok),checks};
