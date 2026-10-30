@@ -1,0 +1,8 @@
+{
+  "name": "@company-helper-crm/contracts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./identity": "./src/identity.ts"
+  }
+}

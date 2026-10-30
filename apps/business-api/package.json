@@ -1,1 +1,16 @@
-{"name":"@company-helper/business-api","private":true,"type":"module","dependencies":{"@hono/node-server":"^2.1.5","hono":"^4.10.0","pg":"^8.16.0"},"devDependencies":{"@types/pg":"^8.15.0"}}
+{
+  "name": "@company-helper-crm/business-api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "hono": "^4.10.0",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.0"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}

@@ -1,1 +1,25 @@
-{"name":"company-helper-crm","private":true,"type":"module","engines":{"node":">=24 <25"},"workspaces":["apps/*"],"scripts":{"test":"vitest run","test:integration":"vitest run","typecheck":"tsc --noEmit","dev":"node scripts/dev-twenty.mjs up","dev:stop":"node scripts/dev-twenty.mjs down"},"devDependencies":{"@types/node":"^24.0.0","typescript":"^5.9.0","vitest":"^4.0.0","tsx":"^4.20.0"}}
+{
+  "name": "company-helper-crm",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:integration": "M0_NATIVE_INTEGRATION=1 vitest run",
+    "typecheck": "tsc --noEmit",
+    "dev": "node scripts/dev-twenty.mjs up",
+    "dev:stop": "node scripts/dev-twenty.mjs down"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0",
+    "tsx": "^4.20.0"
+  }
+}
